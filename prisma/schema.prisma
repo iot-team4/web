@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model SensorData {
+  id          BigInt      @id @default(autoincrement())
+  sensorType  SensorType @map("sensor_type")
+  value       Decimal     @db.Decimal(8, 2)
+  createdAt   DateTime    @default(now()) @map("created_at")
+}
+
+model ControlLog {
+  id          BigInt           @id @default(autoincrement())
+  target      ControlTarget
+  action      ControlAction
+  source      ControlSource
+  createdAt   DateTime         @default(now()) @map("created_at")
+}
+
+model SensorDataSummaryHourly {
+  id          BigInt      @id @default(autoincrement())
+  sensorType  SensorType @map("sensor_type")
+  avgValue    Decimal     @db.Decimal(8, 2) @map("avg_value")
+  createdAt   DateTime    @default(now()) @map("created_at")
+}
+
+enum SensorType {
+  temperature
+  humidity
+  pm25
+}
+
+enum ControlTarget {
+  led
+  fan
+  auto_fan
+}
+
+enum ControlAction {
+  on
+  off
+  enabled
+  disabled
+}
+
+enum ControlSource {
+  user
+  auto
+}
