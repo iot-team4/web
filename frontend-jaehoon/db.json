@@ -1,0 +1,67 @@
+{
+  "records": [
+    {
+      "id": 1,
+      "timestamp": "2025-05-26T10:00:00",
+      "temperature": "20°C",
+      "humidity": "60%",
+      "pm25": "21μg/m³"
+    },
+    {
+      "id": 2,
+      "timestamp": "2025-05-26T11:00:00",
+      "temperature": "21°C",
+      "humidity": "55%",
+      "pm25": "21μg/m³"
+    },
+    {
+      "id": 3,
+      "timestamp": "2025-05-26T12:00:00",
+      "temperature": "23°C",
+      "humidity": "50%",
+      "pm25": "23μg/m³"
+    },
+    {
+      "id": 4,
+      "timestamp": "2025-05-26T13:00:00",
+      "temperature": "25°C",
+      "humidity": "45%",
+      "pm25": "16μg/m³"
+    },
+    {
+      "id": 5,
+      "timestamp": "2025-05-26T14:00:00",
+      "temperature": "25°C",
+      "humidity": "40%",
+      "pm25": "15μg/m³"
+    },
+    {
+      "id": 6,
+      "timestamp": "2025-05-26T15:00:00",
+      "temperature": "26°C",
+      "humidity": "35%",
+      "pm25": "16μg/m³"
+    },
+    {
+      "id": 7,
+      "timestamp": "2025-05-26T16:00:00",
+      "temperature": "27°C",
+      "humidity": "35%",
+      "pm25": "15μg/m³"
+    },
+    {
+      "id": 8,
+      "timestamp": "2025-05-26T17:00:00",
+      "temperature": "26°C",
+      "humidity": "40%",
+      "pm25": "17μg/m³"
+    },
+    {
+      "id": 1748272423831,
+      "timestamp": "2025-05-26T15:13:43.831Z",
+      "temperature": "1",
+      "humidity": "1",
+      "pm25": "1"
+    }
+  ]
+}

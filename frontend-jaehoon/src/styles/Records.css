@@ -1,0 +1,39 @@
+/* src/styles/Records.css */
+.records-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.log-item {
+  background: #f5f5f5;
+  border-left: 6px solid #aaa;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.log-message {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.log-time {
+  font-size: 0.85rem;
+  color: #666;
+  display: block;
+  text-align: right;
+}
+
+.log-item.led {
+  border-left-color: #00bcd4;
+}
+
+.log-item.fan {
+  border-left-color: #4caf50;
+}
+
+.log-item.auto {
+  border-left-color: #f44336;
+}
