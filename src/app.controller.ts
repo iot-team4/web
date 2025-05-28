@@ -2,7 +2,6 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AppService } from '@src/app.service';
 import { ControlPartsRequestBodyDto } from '@src/dtos/control-by-target-request-body.dto';
 import { createSensorDataRequestBodyDto } from '@src/dtos/create-sensor-data-request-body.dto';
-import { ControlSource } from '@src/enums/control-parts.enum';
 import { PiGateway } from '@src/gateway/pi.gateway';
 
 @Controller('api')
@@ -28,9 +27,9 @@ export class AppController {
   }
 
   @Post('control')
-  async control(@Body() body: ControlPartsRequestBodyDto) {
-    this.piGateway.sendCommandToPi(body);
-    await this.appService.createPartControlLog(body, ControlSource.USER);
-    return { status: body.action };
+  async control(@Body() controlPartsRequestBody: ControlPartsRequestBodyDto) {
+    this.piGateway.sendCommandToPi(controlPartsRequestBody);
+    await this.appService.createPartControlLog(controlPartsRequestBody);
+    return { status: controlPartsRequestBody.action };
   }
 }

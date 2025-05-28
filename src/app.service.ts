@@ -5,7 +5,6 @@ import { ControlPartsLogDto } from '@src/dtos/control-parts-log.dto';
 import { ControlPartsDto } from '@src/dtos/control-parts.dto';
 import { createSensorDataRequestBodyDto } from '@src/dtos/create-sensor-data-request-body.dto';
 import { SensorDataDto } from '@src/dtos/sensor-data.dto';
-import { ControlSource } from '@src/enums/control-parts.enum';
 import { FrontendGateway } from '@src/gateway/frontend.gateway';
 
 @Injectable()
@@ -37,8 +36,8 @@ export class AppService {
     );
   }
 
-  async createPartControlLog(controlParts: ControlPartsDto, source: ControlSource) {
-    const log = new ControlPartsLogDto(controlParts, source);
+  async createPartControlLog(controlParts: ControlPartsDto) {
+    const log = new ControlPartsLogDto(controlParts);
 
     return await this.appRepository.createPartControlLog(log);
   }
