@@ -4,6 +4,9 @@ import { AppService } from '@src/app.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'node:path';
 import { PrismaModule } from '@src/prisma/prisma.module';
+import { AppRepository } from '@src/app.repository';
+import { PiGateway } from '@src/gateway/pi.gateway';
+import { FrontendGateway } from '@src/gateway/frontend.gateway';
 
 @Module({
   imports: [
@@ -14,6 +17,6 @@ import { PrismaModule } from '@src/prisma/prisma.module';
     PrismaModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AppRepository, PiGateway, FrontendGateway],
 })
 export class AppModule {}
