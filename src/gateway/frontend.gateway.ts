@@ -6,6 +6,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
+import { SensorDataDto } from '@src/dtos/sensor-data.dto';
 
 @WebSocketGateway({
   namespace: 'frontend',
@@ -26,5 +27,10 @@ export class FrontendGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   handleDisconnect(socket: Socket) {
     this.logger.warn(`Frontend disconnected: ${socket.id}`);
+  }
+
+  sensorUpdate(sensorData: SensorDataDto) {
+    this.logger.log(`Sensor update: ${JSON.stringify(sensorData)}`);
+    this.server.emit('sensor-update', sensorData);
   }
 }

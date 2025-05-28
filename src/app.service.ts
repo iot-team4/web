@@ -2,17 +2,28 @@ import { Injectable } from '@nestjs/common';
 import { SensorType } from '@prisma/client';
 import { AppRepository } from '@src/app.repository';
 import { createSensorDataRequestBodyDto } from '@src/dtos/create-sensor-data-request-body.dto';
+import { SensorDataDto } from '@src/dtos/sensor-data.dto';
+import { FrontendGateway } from '@src/gateway/frontend.gateway';
 
 @Injectable()
 export class AppService {
-  constructor(private readonly appRepository: AppRepository) {}
+  constructor(
+    private readonly appRepository: AppRepository,
+    private readonly frontendGateway: FrontendGateway,
+  ) {}
 
   getHello(): string {
     return 'Hello World!';
   }
 
-  createSensorData(createSensorDataRequestBody: createSensorDataRequestBodyDto) {
-    return this.appRepository.createSensorData(createSensorDataRequestBody);
+  async createSensorData(createSensorDataRequestBody: createSensorDataRequestBodyDto) {
+    const sensorData = new SensorDataDto(
+      createSensorDataRequestBody.sensorType,
+      createSensorDataRequestBody.value,
+    );
+
+    this.frontendGateway.sensorUpdate(sensorData);
+    return await this.appRepository.createSensorData(sensorData);
   }
 
   async getAllLastSensorData() {
