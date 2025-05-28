@@ -13,3 +13,8 @@ export enum AutoFanAction {
   ENABLE = 'enable',
   DISABLE = 'disable',
 }
+
+export enum ControlSource {
+  USER = 'user',
+  AUTO = 'auto',
+}
