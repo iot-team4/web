@@ -1,87 +1,311 @@
-/* src/Statistics.css */
+/* Statistics.css */
+
 .statistics-page {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background-color: #f8fafc;
 }
 
-.data-tabs {
-  margin-bottom: 30px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  padding: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  display: inline-flex; 
+/* 페이지 헤더 */
+.page-header h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 0 5px 0;
+  color: #1f2937;
 }
 
-.tab-button {
-  background-color: transparent;
+.page-header h2 {
+  font-size: 18px;
+  color: #64748b;
+  margin: 0;
+  font-weight: normal;
+}
+
+/* 필터 버튼들 */
+.filter-buttons {
+  margin: 30px 0;
+}
+
+.view-all-button {
+  padding: 10px 20px;
+  margin-right: 10px;
+  background-color: #3b82f6;
+  color: white;
   border: none;
-  padding: 12px 25px;
-  font-size: 1.1em;
-  font-weight: 500;
-  color: #666666;
+  border-radius: 20px;
   cursor: pointer;
-  border-radius: 6px;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  margin: 0 5px;
+  font-size: 14px;
+  transition: background-color 0.2s;
 }
 
-.tab-button:hover {
-  background-color: #f0f0f0;
+.view-all-button.active {
+  background-color: #1d4ed8;
 }
 
-.tab-button.active {
-  background-color: #007bff; 
-  color: #ffffff; 
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+.view-all-button:hover {
+  background-color: #2563eb;
 }
 
+.filter-button {
+  padding: 8px 16px;
+  margin-right: 10px;
+  background-color: transparent;
+  border: 1px solid;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.filter-button.temperature {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.filter-button.temperature.active {
+  background-color: #ef4444;
+  color: white;
+}
+
+.filter-button.temperature:hover {
+  background-color: #ef4444;
+  color: white;
+}
+
+.filter-button.humidity {
+  color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.filter-button.humidity.active {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.filter-button.humidity:hover {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.filter-button.dust {
+  color: #6b7280;
+  border-color: #6b7280;
+}
+
+.filter-button.dust.active {
+  background-color: #6b7280;
+  color: white;
+}
+
+.filter-button.dust:hover {
+  background-color: #6b7280;
+  color: white;
+}
+
+/* 차트 섹션 */
+.chart-section {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-icon {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+/* 범례 */
+.legend {
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.legend-item {
+  margin-right: 20px;
+}
+
+.legend-item.temperature {
+  color: #ef4444;
+}
+
+.legend-item.humidity {
+  color: #3b82f6;
+}
+
+.legend-item.dust {
+  color: #6b7280;
+}
+
+/* 차트 컨테이너 */
 .chart-container {
-  background-color: #ffffff;
-  padding: 25px;
+  position: relative;
+  height: 300px;
+  padding: 20px 0;
+}
+
+/* 호버 툴팁 - 기본 스타일 */
+.hover-tooltip {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  min-height: 400px; 
+  padding: 16px 12px;
+  font-size: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  min-width: 180px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* 왼쪽 툴팁 전용 스타일 - 화살표 제거 */
+.hover-tooltip.left-tooltip {
+  /* 화살표 없음 */
+}
+
+.hover-tooltip .tooltip-time {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.hover-tooltip .tooltip-item {
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.hover-tooltip .tooltip-item.temperature {
+  color: #ef4444;
+}
+
+.hover-tooltip .tooltip-item.humidity {
+  color: #3b82f6;
+}
+
+.hover-tooltip .tooltip-item.dust {
+  color: #6b7280;
+}
+
+/* 현재 데이터 섹션 */
+.current-data-section {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 15px;
+}
+
+.data-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #3b82f6;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.data-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-time {
+  display: flex;
   align-items: center;
-  position: relative;
+  margin-bottom: 15px;
+  color: #3b82f6;
+  font-weight: bold;
+  font-size: 14px;
 }
 
-.chart-description {
-    text-align: center;
-    color: #888;
-    margin-top: 20px;
-    font-style: italic;
+.card-data {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
 }
 
-.placeholder-chart {
+.data-item {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.data-item.temperature {
+  color: #ef4444;
+}
+
+.data-item.humidity {
+  color: #3b82f6;
+}
+
+.data-item.dust {
+  color: #6b7280;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .statistics-page {
+    padding: 15px;
+  }
+  
+  .filter-buttons {
     display: flex;
-    align-items: flex-end; 
-    height: 250px; 
-    width: 100%;
-    max-width: 600px;
-    border-left: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
-    padding: 0 10px;
-    box-sizing: border-box;
-    justify-content: space-around;
-}
-
-.chart-bar {
-    width: 30px;
-    background-color: #007bff; 
-    margin: 0 5px;
-    transition: height 0.3s ease;
-    position: relative;
-    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .chart-container {
+    overflow-x: auto;
+  }
+  
+  .card-data {
     flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
+    gap: 10px;
+  }
+  
+  .hover-tooltip {
+    min-width: 150px;
+    font-size: 11px;
+    padding: 14px 10px;
+  }
+  
+  .hover-tooltip .tooltip-time {
+    margin-bottom: 8px;
+  }
+  
+  .hover-tooltip .tooltip-item {
+    margin-bottom: 5px;
+  }
 }
 
-.chart-bar .bar-label {
-    position: absolute;
-    bottom: -25px;
-    font-size: 0.8em;
-    color: #555;
+@media (max-width: 480px) {
+  .page-header h1 {
+    font-size: 20px;
+  }
+  
+  .page-header h2 {
+    font-size: 16px;
+  }
+  
+  .chart-section {
+    padding: 15px;
+  }
+  
+  .data-card {
+    padding: 15px;
+  }
 }
