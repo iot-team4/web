@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { AppService } from '@src/app.service';
 import { ControlPartsRequestBodyDto } from '@src/dtos/control-by-target-request-body.dto';
 import { createSensorDataRequestBodyDto } from '@src/dtos/create-sensor-data-request-body.dto';
+import { GetControlLogRequestQueryDto } from '@src/dtos/get-control-log-request-query.dto';
 import { PiGateway } from '@src/gateway/pi.gateway';
 
 @Controller('api')
@@ -31,5 +32,10 @@ export class AppController {
     this.piGateway.sendCommandToPi(controlPartsRequestBody);
     await this.appService.createPartControlLog(controlPartsRequestBody);
     return { status: controlPartsRequestBody.action };
+  }
+
+  @Get('logs/control')
+  getControlLogs(@Query() getControlLogRequestQueryDto: GetControlLogRequestQueryDto) {
+    return this.appService.getControlLogs(getControlLogRequestQueryDto);
   }
 }

@@ -4,6 +4,7 @@ import { AppRepository } from '@src/app.repository';
 import { ControlPartsLogDto } from '@src/dtos/control-parts-log.dto';
 import { ControlPartsDto } from '@src/dtos/control-parts.dto';
 import { createSensorDataRequestBodyDto } from '@src/dtos/create-sensor-data-request-body.dto';
+import { GetControlLogRequestQueryDto } from '@src/dtos/get-control-log-request-query.dto';
 import { SensorDataDto } from '@src/dtos/sensor-data.dto';
 import { FrontendGateway } from '@src/gateway/frontend.gateway';
 
@@ -40,5 +41,12 @@ export class AppService {
     const log = new ControlPartsLogDto(controlParts);
 
     return await this.appRepository.createPartControlLog(log);
+  }
+
+  async getControlLogs(getControlLogRequestQueryDto: GetControlLogRequestQueryDto) {
+    return await this.appRepository.getControlLogs(
+      getControlLogRequestQueryDto.limit,
+      getControlLogRequestQueryDto.orderBy,
+    );
   }
 }

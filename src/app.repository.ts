@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ControlAction, ControlTarget, SensorData, SensorType } from '@prisma/client';
 import { ControlPartsLogDto } from '@src/dtos/control-parts-log.dto';
+import { OrderBy } from '@src/dtos/get-control-log-request-query.dto';
 import { SensorDataDto } from '@src/dtos/sensor-data.dto';
 import { AutoFanAction, TargetType } from '@src/enums/control-parts.enum';
 import { PrismaService } from '@src/prisma/prisma.service';
@@ -60,5 +61,33 @@ export class AppRepository {
 
   getHello(): string {
     return 'Hello World!';
+  }
+
+  async getControlLogs(
+    limit: number,
+    orderBy: OrderBy,
+  ): Promise<
+    {
+      id: number;
+      target: string;
+      action: string;
+      source: string;
+      createdAt: string;
+    }[]
+  > {
+    const logs = await this.prismaService.controlLog.findMany({
+      take: limit,
+      orderBy: {
+        createdAt: orderBy,
+      },
+    });
+
+    return logs.map((log) => ({
+      id: Number(log.id),
+      target: log.target,
+      action: log.action,
+      source: log.source,
+      createdAt: log.createdAt.toISOString(),
+    }));
   }
 }
