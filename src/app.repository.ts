@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ControlAction, ControlTarget, SensorData, SensorType, ControlLog, Prisma } from '@prisma/client';
+import { ControlAction, ControlTarget, SensorData, SensorType } from '@prisma/client';
 import { ControlPartsLogDto } from '@src/dtos/control-parts-log.dto';
 import { OrderBy } from '@src/dtos/get-control-log-request-query.dto';
 import { SensorDataDto } from '@src/dtos/sensor-data.dto';
@@ -84,9 +84,9 @@ export class AppRepository {
 
     return logs.map((log) => ({
       id: Number(log.id),
-      target: log.target, // Prisma enums are returned as strings by default
-      action: log.action, // Prisma enums are returned as strings by default
-      source: log.source, // Prisma enums are returned as strings by default
+      target: log.target,
+      action: log.action,
+      source: log.source,
       createdAt: log.createdAt.toISOString(),
     }));
   }
