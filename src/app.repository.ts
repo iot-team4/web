@@ -4,7 +4,9 @@ import { ControlPartsLogDto } from '@src/dtos/control-parts-log.dto';
 import { OrderBy } from '@src/dtos/get-control-log-request-query.dto';
 import { SensorDataDto } from '@src/dtos/sensor-data.dto';
 import { AutoFanAction, TargetType } from '@src/enums/control-parts.enum';
+import { SensorQueryRange } from '@src/enums/sensor-query-range.enum.ts';
 import { PrismaService } from '@src/prisma/prisma.service';
+import { Prisma } from '@prisma/client'; // Required for $queryRaw
 
 @Injectable()
 export class AppRepository {
@@ -88,6 +90,43 @@ export class AppRepository {
       action: log.action,
       source: log.source,
       createdAt: log.createdAt.toISOString(),
+    }));
+  }
+
+  async getSensorSummary(
+    sensorType: SensorType,
+    range: SensorQueryRange,
+  ): Promise<{ createdAt: string; avgValue: number }[]> {
+    let startDate: Date;
+    const now = new Date();
+
+    if (range === SensorQueryRange.TWENTY_FOUR_H) {
+      startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    } else if (range === SensorQueryRange.SEVEN_D) {
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    } else {
+      // Should not happen due to enum validation, but as a fallback:
+      startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    }
+
+    const result: { createdAtHour: Date; avgValue: Prisma.Decimal }[] =
+      await this.prismaService.$queryRaw`
+      SELECT
+        DATE_TRUNC('hour', "created_at") AS "createdAtHour",
+        AVG("value") AS "avgValue"
+      FROM
+        "SensorData"
+      WHERE
+        "sensor_type" = ${sensorType.toString()}::"SensorType" AND "created_at" >= ${startDate}
+      GROUP BY
+        "createdAtHour"
+      ORDER BY
+        "createdAtHour" ASC
+    `;
+
+    return result.map((row) => ({
+      createdAt: row.createdAtHour.toISOString(),
+      avgValue: Number(row.avgValue),
     }));
   }
 }

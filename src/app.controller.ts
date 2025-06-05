@@ -3,6 +3,7 @@ import { AppService } from '@src/app.service';
 import { ControlPartsRequestBodyDto } from '@src/dtos/control-by-target-request-body.dto';
 import { createSensorDataRequestBodyDto } from '@src/dtos/create-sensor-data-request-body.dto';
 import { GetControlLogRequestQueryDto } from '@src/dtos/get-control-log-request-query.dto';
+import { GetSensorSummaryQueryDto } from '@src/dtos/get-sensor-summary-query.dto';
 import { PiGateway } from '@src/gateway/pi.gateway';
 
 @Controller('api')
@@ -37,5 +38,10 @@ export class AppController {
   @Get('logs/control')
   getControlLogs(@Query() getControlLogRequestQueryDto: GetControlLogRequestQueryDto) {
     return this.appService.getControlLogs(getControlLogRequestQueryDto);
+  }
+
+  @Get('sensors/summary')
+  getSensorSummary(@Query() query: GetSensorSummaryQueryDto) {
+    return this.appService.getSensorSummary(query.sensorType, query.range);
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SensorType } from '@prisma/client';
 import { AppRepository } from '@src/app.repository';
+import { SensorQueryRange } from '@src/enums/sensor-query-range.enum.ts';
 import { ControlPartsLogDto } from '@src/dtos/control-parts-log.dto';
 import { ControlPartsDto } from '@src/dtos/control-parts.dto';
 import { createSensorDataRequestBodyDto } from '@src/dtos/create-sensor-data-request-body.dto';
@@ -48,5 +49,9 @@ export class AppService {
       getControlLogRequestQueryDto.limit,
       getControlLogRequestQueryDto.orderBy,
     );
+  }
+
+  async getSensorSummary(sensorType: SensorType, range: SensorQueryRange) {
+    return this.appRepository.getSensorSummary(sensorType, range);
   }
 }
