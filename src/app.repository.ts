@@ -59,10 +59,6 @@ export class AppRepository {
     });
   }
 
-  getHello(): string {
-    return 'Hello World!';
-  }
-
   async getControlLogs(
     limit: number,
     orderBy: OrderBy,
@@ -89,5 +85,20 @@ export class AppRepository {
       source: log.source,
       createdAt: log.createdAt.toISOString(),
     }));
+  }
+
+  async saveHourlySensorSummaries(
+    summaries: Array<{ hour: Date; sensorType: SensorType; trimmedMean: number }>,
+  ): Promise<void> {
+    const dataToSave = summaries.map((summary) => ({
+      createdAt: summary.hour,
+      sensorType: summary.sensorType,
+      avgValue: Number(summary.trimmedMean.toFixed(2)), // 소수점 두 자리로 반올림하여 전달
+    }));
+
+    await this.prismaService.sensorDataSummaryHourly.createMany({
+      data: dataToSave,
+      skipDuplicates: true,
+    });
   }
 }

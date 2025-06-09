@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { SensorType } from '@prisma/client';
 import { AppRepository } from '@src/app.repository';
 import { ControlPartsLogDto } from '@src/dtos/control-parts-log.dto';
@@ -10,10 +11,17 @@ import { FrontendGateway } from '@src/gateway/frontend.gateway';
 
 @Injectable()
 export class AppService {
+  private sensorDataBuffer: Record<SensorType, number[]>;
+
   constructor(
     private readonly appRepository: AppRepository,
     private readonly frontendGateway: FrontendGateway,
-  ) {}
+  ) {
+    this.sensorDataBuffer = {} as Record<SensorType, number[]>;
+    for (const type of Object.values(SensorType)) {
+      this.sensorDataBuffer[type] = [];
+    }
+  }
 
   getHello(): string {
     return 'Hello World!';
@@ -26,6 +34,7 @@ export class AppService {
     );
 
     this.frontendGateway.sensorUpdate(sensorData);
+    this.sensorDataBuffer[sensorData.sensorType].push(Number(sensorData.value)); // 버퍼에 데이터 저장
     return await this.appRepository.createSensorData(sensorData);
   }
 
@@ -48,5 +57,42 @@ export class AppService {
       getControlLogRequestQueryDto.limit,
       getControlLogRequestQueryDto.orderBy,
     );
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async calculateAndStoreHourlyAverage() {
+    console.log('시간별 센서 데이터 평균 계산 시작:', new Date().toISOString());
+
+    const currentHour = new Date();
+    currentHour.setMinutes(0);
+    currentHour.setSeconds(0);
+    currentHour.setMilliseconds(0);
+    const summariesToSave: { hour: Date; sensorType: SensorType; trimmedMean: number }[] = [];
+
+    for (const sensorType of Object.values(SensorType)) {
+      const values = this.sensorDataBuffer[sensorType] || [];
+      const sum = values.reduce((acc, v) => acc + v, 0);
+      const avg = sum / values.length;
+
+      if (values.length) {
+        summariesToSave.push({ hour: currentHour, sensorType, trimmedMean: avg });
+      } else {
+        summariesToSave.push({ hour: currentHour, sensorType, trimmedMean: 0 });
+      }
+
+      this.sensorDataBuffer[sensorType] = []; // 버퍼 초기화
+      console.log(
+        `센서 ${sensorType}의 ${currentHour.toISOString()} 시간대 평균: ${avg.toFixed(2)} (데이터 ${values.length}개)`,
+      );
+    }
+
+    if (summariesToSave.length > 0) {
+      await this.appRepository.saveHourlySensorSummaries(summariesToSave);
+      console.log(`${summariesToSave.length}개의 시간별 평균이 저장되었습니다.`);
+      return { message: '시간별 평균이 계산되어 저장되었습니다.', count: summariesToSave.length };
+    }
+
+    console.log('저장할 요약 데이터가 없습니다.');
+    return { message: '저장할 요약 데이터가 없습니다.', count: 0 };
   }
 }
