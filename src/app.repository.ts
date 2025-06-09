@@ -4,7 +4,9 @@ import { ControlPartsLogDto } from '@src/dtos/control-parts-log.dto';
 import { OrderBy } from '@src/dtos/get-control-log-request-query.dto';
 import { SensorDataDto } from '@src/dtos/sensor-data.dto';
 import { AutoFanAction, TargetType } from '@src/enums/control-parts.enum';
+import { SensorQueryRange } from '@src/enums/sensor-query-range.enum';
 import { PrismaService } from '@src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AppRepository {
@@ -100,5 +102,35 @@ export class AppRepository {
       data: dataToSave,
       skipDuplicates: true,
     });
+  }
+
+  async getSensorSummary(
+    sensorType: SensorType,
+    range: SensorQueryRange,
+  ): Promise<{ createdAt: string; avgValue: number }[]> {
+    let startDate: Date;
+    const now = new Date();
+
+    if (range === SensorQueryRange.SEVEN_D) {
+      startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    } else {
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    }
+
+    const result: { createdAt: Date; avgValue: Prisma.Decimal }[] =
+      await this.prismaService.sensorDataSummaryHourly.findMany({
+        where: {
+          sensorType,
+          createdAt: {
+            gte: startDate,
+            lte: now,
+          },
+        },
+      });
+
+    return result.map((row) => ({
+      createdAt: row.createdAt.toISOString(),
+      avgValue: Number(row.avgValue),
+    }));
   }
 }
