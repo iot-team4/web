@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from '@src/app.controller';
 import { AppService } from '@src/app.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -15,6 +16,7 @@ import { FrontendGateway } from '@src/gateway/frontend.gateway';
       exclude: ['/api*'],
     }),
     PrismaModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService, AppRepository, PiGateway, FrontendGateway],
