@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ControlAction, ControlTarget, SensorData, SensorType } from '@prisma/client';
+// SensorType will be imported from @prisma/client, ensure it's added if not already present
+import { ControlAction, ControlTarget, SensorData, SensorType, SensorDataSummaryHourly } from '@prisma/client';
 import { ControlPartsLogDto } from '@src/dtos/control-parts-log.dto';
 import { OrderBy } from '@src/dtos/get-control-log-request-query.dto';
 import { SensorDataDto } from '@src/dtos/sensor-data.dto';
@@ -101,4 +102,27 @@ export class AppRepository {
       skipDuplicates: true,
     });
   }
+
+  // New method starts here
+  async getSensorSummaries(
+    sensorType: SensorType,
+    startTime: Date,
+  ): Promise<Pick<SensorDataSummaryHourly, 'createdAt' | 'avgValue'>[]> {
+    return await this.prismaService.sensorDataSummaryHourly.findMany({
+      where: {
+        sensorType: sensorType,
+        createdAt: {
+          gte: startTime,
+        },
+      },
+      select: {
+        createdAt: true,
+        avgValue: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+  }
+  // New method ends here
 }
