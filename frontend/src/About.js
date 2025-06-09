@@ -3,10 +3,10 @@ import './About.css';
 
 function About() {
   const teamMembers = [
-    { name: '조희철', position: '팀원', emoji: '👨‍💼', role: '하드웨어 설계 및 제작', studentId: '1234' },
-    { name: '이선우', position: '팀원', emoji: '👨‍💼', role: '하드웨어 제어 파이썬 소스 코딩', studentId: '1234' },
-    { name: '박준혁', position: '팀장', emoji: '🌟', role: '백엔드 개발 / DB 개발', studentId: '1234' },
-    { name: '이재훈', position: '팀원', emoji: '👨‍💼', role: '프론트엔드 개발 / UI/UX 디자인', studentId: '1234' },
+    { name: '조희철', position: '팀원', emoji: '👨‍💼', role: '하드웨어 설계 및 제작', studentId: '202116065' },
+    { name: '이선우', position: '팀원', emoji: '👨‍💼', role: '하드웨어 제어 파이썬 소스 코딩', studentId: '202116051' },
+    { name: '박준혁', position: '팀장', emoji: '🌟', role: '백엔드 개발 / DB 개발', studentId: '202316035' },
+    { name: '이재훈', position: '팀원', emoji: '👨‍💼', role: '프론트엔드 개발 / UI/UX 디자인', studentId: '202116047' },
     { name: '정상건', position: '팀원', emoji: '👨‍💼', role: '프론트엔드 개발 / UI/UX 디자인', studentId: '202116046' },
   ];
 
