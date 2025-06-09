@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './Dashboard.css';
 import io from 'socket.io-client';
 
@@ -33,48 +33,81 @@ function Dashboard({ addRecord }) {
     return '매우나쁨';
   };
 
+  // OpenWeatherMap AQI 값에 따른 공기질 상태 판단 함수
+  // 1 = 좋음, 2 = 보통, 3 = 보통, 4 = 나쁨, 5 = 매우 나쁨
+  const getOpenWeatherAirQualityStatus = (aqi) => {
+    if (aqi === 1) return '좋음';
+    if (aqi === 2) return '보통';
+    if (aqi === 3) return '보통';
+    if (aqi === 4) return '나쁨';
+    if (aqi === 5) return '매우나쁨';
+    return '알 수 없음';
+  };
+
   // API 호출 함수 (최초 로딩 시 사용)
   const fetchSensorData = async () => {
     try {
       setLoading(true);
       
-      const response = await fetch('/api/sensors/latest'); // 최신 센서 데이터 조회 API 사용 
-      if (!response.ok) {
-        throw new Error('센서 데이터를 가져오는데 실패했습니다.');
+      // 1. 내부 센서 데이터 가져오기 (기존 API)
+      const indoorResponse = await fetch('/api/sensors/latest');
+      if (!indoorResponse.ok) {
+        throw new Error('내부 센서 데이터를 가져오는데 실패했습니다.');
       }
-      const sensorData = await response.json();
+      const indoorSensorData = await indoorResponse.json();
       
-      let temperature = 0;
-      let humidity = 0;
-      let dust = 0;
+      let indoorTemperature = 0;
+      let indoorHumidity = 0;
+      let indoorDust = 0;
 
-      for (const data of sensorData) {
-        if (data.sensorType === "temperature") temperature = data.value;
-        else if (data.sensorType === "humidity") humidity = data.value;
-        else if (data.sensorType === "pm25") dust = data.value;
+      for (const data of indoorSensorData) {
+        if (data.sensorType === "temperature") indoorTemperature = data.value;
+        else if (data.sensorType === "humidity") indoorHumidity = data.value;
+        else if (data.sensorType === "pm25") indoorDust = data.value;
       }
       
       setIndoorData({
-        temp: temperature,
-        humidity: humidity,
-        dust: dust,
-        airQuality: getAirQualityStatus(dust),
+        temp: indoorTemperature,
+        humidity: indoorHumidity,
+        dust: indoorDust,
+        airQuality: getAirQualityStatus(indoorDust),
       });
+
+      // 2. OpenWeatherMap 온도, 습도 데이터 가져오기
+      const weatherApiKey = process.env.REACT_APP_WEATHER_API_KEY;
+      const lat = 37.631942;
+      const lon = 127.055578;
+      const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${weatherApiKey}`;
       
-      // 실외 데이터는 현재 API 응답에서 명확히 구분되지 않으므로, 
-      // 필요에 따라 백엔드 API 응답 구조를 조정하거나 
-      // 실외 센서 데이터도 받아오도록 로직 추가 필요
-      // 일단은 indoorData와 동일하게 또는 0으로 설정합니다.
+      const weatherResponse = await fetch(weatherApiUrl);
+      if (!weatherResponse.ok) {
+        throw new Error('외부 날씨 데이터를 가져오는데 실패했습니다.');
+      }
+      const weatherData = await weatherResponse.json();
+      const outdoorTemp = weatherData.main.temp;
+      const outdoorHumidity = weatherData.main.humidity;
+
+      // 3. OpenWeatherMap 공기질 데이터 가져오기
+      const airPollutionApiUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${weatherApiKey}`;
+
+      const airPollutionResponse = await fetch(airPollutionApiUrl);
+      if (!airPollutionResponse.ok) {
+        throw new Error('외부 공기질 데이터를 가져오는데 실패했습니다.');
+      }
+      const airPollutionData = await airPollutionResponse.json();
+      const outdoorPm25 = airPollutionData.list[0].components.pm2_5;
+      const outdoorAqi = airPollutionData.list[0].main.aqi;
+      
       setOutdoorData({
-        temp: 0, // 실제 실외 데이터가 있다면 여기에 매핑
-        humidity: 0, // 실제 실외 데이터가 있다면 여기에 매핑
-        dust: 0, // 실제 실외 데이터가 있다면 여기에 매핑
-        airQuality: '알 수 없음', 
+        temp: outdoorTemp,
+        humidity: outdoorHumidity,
+        dust: outdoorPm25,
+        airQuality: getOpenWeatherAirQualityStatus(outdoorAqi),
       });
       
       setError(null);
     } catch (err) {
-      console.error('센서 데이터 가져오기 실패:', err);
+      console.error('데이터 가져오기 실패:', err);
       setError(err.message);
     } finally {
       setLoading(false);
