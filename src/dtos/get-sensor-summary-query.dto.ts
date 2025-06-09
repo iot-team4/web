@@ -1,6 +1,6 @@
-import { IsEnum, IsOptional } from 'class-validator';
 import { SensorType } from '@prisma/client';
-import { SensorQueryRange } from '../enums/sensor-query-range.enum.ts';
+import { IsEnum, IsOptional } from 'class-validator';
+import { SensorQueryRange } from '../enums/sensor-query-range.enum';
 
 export class GetSensorSummaryQueryDto {
   @IsEnum(SensorType)
