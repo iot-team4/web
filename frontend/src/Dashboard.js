@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 function Dashboard({ addRecord }) {
   const [ledControl, setLedControl] = useState(false);
   const [manualFanControl, setManualFanControl] = useState(false);
-  const [autoFanControl, setAutoFanControl] = useState(true);
+  const [autoFanControl, setAutoFanControl] = useState(false);
   
   // API 데이터를 위한 state
   const [indoorData, setIndoorData] = useState({
@@ -76,28 +76,61 @@ function Dashboard({ addRecord }) {
     return '#ffffff'; // 기본값 (흰색)
   };
 
-  // API 호출 함수 (최초 로딩 시 사용)
-  const fetchSensorData = async () => {
+  // 모든 초기 데이터와 제어 이력을 함께 가져오는 함수
+  const fetchInitialData = async () => {
+    setLoading(true); // 로딩 시작
+
     try {
-      setLoading(true);
-      
-      // 1. 내부 센서 데이터 가져오기 (기존 API)
-      const indoorResponse = await fetch('/api/sensors/latest');
-      if (!indoorResponse.ok) {
-        throw new Error('내부 센서 데이터를 가져오는데 실패했습니다.');
-      }
+      // 1. 내부 센서 데이터 가져오기
+      const indoorResponsePromise = fetch('/api/sensors/latest');
+
+      // 2. OpenWeatherMap 온도, 습도, 공기질 데이터 가져오기
+      const weatherApiKey = 'eeb365b6bdbb50592dc2406f1dc92f3e'; // Your API key
+      const lat = 37.631942;
+      const lon = 127.055578;
+      const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${weatherApiKey}`;
+      const airPollutionApiUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${weatherApiKey}`;
+
+      const weatherResponsePromise = fetch(weatherApiUrl);
+      const airPollutionResponsePromise = fetch(airPollutionApiUrl);
+
+      // 3. 최신 제어 이력 가져오기
+      const controlHistoryResponsePromise = fetch('/api/logs/control/latest');
+
+      // 모든 API 호출을 동시에 기다립니다.
+      const [
+        indoorResponse, 
+        weatherResponse, 
+        airPollutionResponse, 
+        controlHistoryResponse
+      ] = await Promise.all([
+        indoorResponsePromise,
+        weatherResponsePromise,
+        airPollutionResponsePromise,
+        controlHistoryResponsePromise
+      ]);
+
+      // 각 응답 유효성 검사
+      if (!indoorResponse.ok) throw new Error('내부 센서 데이터를 가져오는데 실패했습니다.');
+      if (!weatherResponse.ok) throw new Error('외부 날씨 데이터를 가져오는데 실패했습니다.');
+      if (!airPollutionResponse.ok) throw new Error('외부 공기질 데이터를 가져오는데 실패했습니다.');
+      if (!controlHistoryResponse.ok) throw new Error('최신 제어 이력을 가져오는데 실패했습니다.');
+
+      // 응답 JSON 파싱
       const indoorSensorData = await indoorResponse.json();
-      
+      const weatherData = await weatherResponse.json();
+      const airPollutionData = await airPollutionResponse.json();
+      const controlHistory = await controlHistoryResponse.json();
+
+      // 실내 센서 데이터 처리 및 상태 업데이트
       let indoorTemperature = 0;
       let indoorHumidity = 0;
       let indoorDust = 0;
-
       for (const data of indoorSensorData) {
         if (data.sensorType === "temperature") indoorTemperature = data.value;
         else if (data.sensorType === "humidity") indoorHumidity = data.value;
         else if (data.sensorType === "pm25") indoorDust = data.value;
       }
-      
       setIndoorData({
         temp: indoorTemperature,
         humidity: indoorHumidity,
@@ -105,65 +138,54 @@ function Dashboard({ addRecord }) {
         airQuality: getAirQualityStatus(indoorDust),
       });
 
-      // 2. OpenWeatherMap 온도, 습도 데이터 가져오기 
-      const weatherApiKey = 'eeb365b6bdbb50592dc2406f1dc92f3e';
-      const lat = 37.631942;
-      const lon = 127.055578;
-      const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${weatherApiKey}`;
-
-      const weatherResponse = await fetch(weatherApiUrl);
-      if (!weatherResponse.ok) {
-        throw new Error('외부 날씨 데이터를 가져오는데 실패했습니다.');
-      }
-      const weatherData = await weatherResponse.json();
+      // 실외 데이터 처리 및 상태 업데이트
       const outdoorTemp = weatherData.main.temp;
       const outdoorHumidity = weatherData.main.humidity;
-
-      // 3. OpenWeatherMap 공기질 데이터 가져오기 
-      const airPollutionApiUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${weatherApiKey}`;
-
-      const airPollutionResponse = await fetch(airPollutionApiUrl);
-      if (!airPollutionResponse.ok) {
-        throw new Error('외부 공기질 데이터를 가져오는데 실패했습니다.');
-      }
-      const airPollutionData = await airPollutionResponse.json();
       const outdoorPm25 = airPollutionData.list[0].components.pm2_5;
-      const outdoorAqi = airPollutionData.list[0].main.aqi; // AQI 값 가져오기 
-      
+      const outdoorAqi = airPollutionData.list[0].main.aqi;
       setOutdoorData({
         temp: outdoorTemp,
         humidity: outdoorHumidity,
         dust: outdoorPm25,
         airQuality: getOpenWeatherAirQualityStatus(outdoorAqi),
-        aqi: outdoorAqi, // AQI 값 상태에 저장
+        aqi: outdoorAqi,
       });
+
+      for (const record of controlHistory) {
+        if (record.target === 'led') {
+          setLedControl(record.action === 'on');
+        } else if (record.target === 'fan') {
+          setManualFanControl(record.action === 'on');
+        } else if (record.target === 'auto_fan') {
+          setAutoFanControl(record.action === 'enabled');
+        }
+      }
       
-      setError(null);
+      setError(null); // 에러가 발생하지 않았다면 초기화
     } catch (err) {
-      console.error('데이터 가져오기 실패:', err);
+      console.error('초기 데이터 로딩 실패:', err);
       setError(err.message);
     } finally {
-      setLoading(false);
+      setLoading(false); // 모든 로딩이 완료되면 로딩 상태 해제
     }
   };
 
-  // 컴포넌트 마운트 시 데이터 가져오기 및 웹소켓 연결
+  // 컴포넌트 마운트 시 초기 데이터 로딩 및 웹소켓 연결
   useEffect(() => {
-    fetchSensorData(); // 초기 데이터 로딩
+    fetchInitialData(); // 초기 데이터 로딩 함수 호출
     
     // 웹소켓 연결
-    const socket = io('http://localhost:3000/frontend'); // 백엔드 서버 주소 (예: 'http://localhost:3000')를 인자로 전달할 수 있습니다.
+    const socket = io('http://localhost:3000/frontend');
 
     // 'sensor-update' 채널 구독 
-    socket.on('sensor-update', (data) => { // 센서 데이터가 백엔드로 들어오면 실시간으로 프론트에 전송됩니다. 
+    socket.on('sensor-update', (data) => {
       console.log('웹소켓으로 센서 데이터 수신:', data);
-      // 수신된 데이터로 indoorData 업데이트
       setIndoorData(prevData => {
         let newTemp = prevData.temp;
         let newHumidity = prevData.humidity;
         let newDust = prevData.dust;
 
-        if (data.sensorType === 'temperature') { // 센서 타입은 'temperature' | 'humidity' | 'pm25' 중 하나입니다. 
+        if (data.sensorType === 'temperature') {
           newTemp = data.value;
         } else if (data.sensorType === 'humidity') {
           newHumidity = data.value;
@@ -195,40 +217,36 @@ function Dashboard({ addRecord }) {
 
     if (deviceName === 'LED 제어') {
       targetDevice = 'led';
-      actionType = newState ? 'on' : 'off'; // target이 led일 때 action은 'on' 또는 'off' 
+      actionType = newState ? 'on' : 'off';
     } else if (deviceName === '환기 팬 수동제어') {
       targetDevice = 'fan';
-      actionType = newState ? 'on' : 'off'; // target이 fan일 때 action은 'on' 또는 'off' 
+      actionType = newState ? 'on' : 'off';
     } else if (deviceName === '환기 팬 자동제어') {
       targetDevice = 'autoFan';
-      actionType = newState ? 'enable' : 'disable'; // target이 autoFan일 때 action은 'enable' 또는 'disable' 
+      actionType = newState ? 'enable' : 'disable';
     }
 
     try {
-      // API로 제어 명령 전송 
       const response = await fetch('/api/control', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          target: targetDevice, // 'led' | 'fan' | 'autoFan' 
-          action: actionType, // 'on' | 'off' | 'enable' | 'disable' 
-          source: 'user', // 'user' | 'auto' 
+          target: targetDevice,
+          action: actionType,
+          source: 'user',
         }),
       });
       
       if (!response.ok) {
-        // 백엔드에서 400 Bad Request 또는 500 Internal Server Error 발생 시 
         const errorData = await response.json();
         throw new Error(errorData.message || '디바이스 제어에 실패했습니다.');
       }
       
-      // 성공적으로 제어되면 기록 추가
       addRecord(deviceName, actionType);
     } catch (err) {
       console.error('디바이스 제어 실패:', err);
-      // 실패 시 상태 되돌리기
       setStateFunction(currentState);
       setError(`${deviceName} 제어에 실패했습니다: ${err.message}`);
     }
@@ -279,7 +297,9 @@ function Dashboard({ addRecord }) {
     return "현재 실내외 환경은 대체로 쾌적합니다. 좋은 하루 되세요! 😊";
   };
 
-  if (loading && indoorData.temp === 0) {
+  const recommendationMessage = getRecommendationMessage();
+
+  if (loading) { // 모든 초기 데이터 로딩이 완료될 때까지 로딩 메시지 표시
     return (
       <div className="dashboard-page">
         <div className="page-header">
@@ -304,10 +324,11 @@ function Dashboard({ addRecord }) {
         </div>
       )}
 
-    
+      {recommendationMessage && (
         <div className="alert-message">
-          {getRecommendationMessage()}
+          {recommendationMessage}
         </div>
+      )}
 
       <div className="environment-data-container">
         <div className="data-section">
