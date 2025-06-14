@@ -182,7 +182,6 @@ function Dashboard({ addRecord }) {
           target: targetDevice, // 'led' | 'fan' | 'autoFan' 
           action: actionType, // 'on' | 'off' | 'enable' | 'disable' 
           source: 'user', // 'user' | 'auto' 
-          timestamp: new Date().toISOString(),
         }),
       });
       
