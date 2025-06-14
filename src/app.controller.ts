@@ -40,6 +40,11 @@ export class AppController {
     return this.appService.getControlLogs(getControlLogRequestQueryDto);
   }
 
+  @Get('logs/control/latest')
+  getLatestControlLogs() {
+    return this.appService.getLatestControlLogs();
+  }
+
   @Get('sensors/summary')
   getSensorSummary(@Query() query: GetSensorSummaryQueryDto) {
     return this.appService.getSensorSummary(query.sensorType, query.range);

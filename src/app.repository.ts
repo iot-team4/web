@@ -89,6 +89,38 @@ export class AppRepository {
     }));
   }
 
+  async getLatestControlLogs(): Promise<
+    {
+      id: number;
+      target: string;
+      action: string;
+      source: string;
+      createdAt: string;
+    }[]
+  > {
+    const targets = [ControlTarget.led, ControlTarget.fan, ControlTarget.auto_fan];
+    const latestLogs = [];
+
+    for (const target of targets) {
+      const log = await this.prismaService.controlLog.findFirst({
+        where: { target },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (log) {
+        latestLogs.push({
+          id: Number(log.id),
+          target: log.target,
+          action: log.action,
+          source: log.source,
+          createdAt: log.createdAt.toISOString(),
+        });
+      }
+    }
+
+    return latestLogs;
+  }
+
   async saveHourlySensorSummaries(
     summaries: Array<{ hour: Date; sensorType: SensorType; trimmedMean: number }>,
   ): Promise<void> {

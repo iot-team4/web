@@ -60,6 +60,18 @@ export class AppService {
     );
   }
 
+  async getLatestControlLogs(): Promise<
+    {
+      id: number;
+      target: string;
+      action: string;
+      source: string;
+      createdAt: string;
+    }[]
+  > {
+    return await this.appRepository.getLatestControlLogs();
+  }
+
   async getSensorSummary(sensorType: SensorType, range: SensorQueryRange) {
     return this.appRepository.getSensorSummary(sensorType, range);
   }
