@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { AppService } from '@src/app.service';
+import { ControlLogResponseDto } from '@src/dtos/control-log-response.dto';
 import { ControlPartsRequestBodyDto } from '@src/dtos/control-by-target-request-body.dto';
 import { createSensorDataRequestBodyDto } from '@src/dtos/create-sensor-data-request-body.dto';
 import { GetControlLogRequestQueryDto } from '@src/dtos/get-control-log-request-query.dto';
@@ -36,8 +37,15 @@ export class AppController {
   }
 
   @Get('logs/control')
-  getControlLogs(@Query() getControlLogRequestQueryDto: GetControlLogRequestQueryDto) {
+  getControlLogs(
+    @Query() getControlLogRequestQueryDto: GetControlLogRequestQueryDto,
+  ): Promise<ControlLogResponseDto[]> {
     return this.appService.getControlLogs(getControlLogRequestQueryDto);
+  }
+
+  @Get('logs/control/latest')
+  getLatestControlLogs(): Promise<ControlLogResponseDto[]> {
+    return this.appService.getLatestControlLogs();
   }
 
   @Get('sensors/summary')
