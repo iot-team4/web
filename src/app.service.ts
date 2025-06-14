@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { SensorType } from '@prisma/client'; // Ensure SensorType is imported
 import { AppRepository } from '@src/app.repository';
+import { ControlLogResponseDto } from '@src/dtos/control-log-response.dto';
 import { ControlPartsLogDto } from '@src/dtos/control-parts-log.dto';
 import { ControlPartsDto } from '@src/dtos/control-parts.dto';
 import { createSensorDataRequestBodyDto } from '@src/dtos/create-sensor-data-request-body.dto';
@@ -53,22 +54,16 @@ export class AppService {
     return await this.appRepository.createPartControlLog(log);
   }
 
-  async getControlLogs(getControlLogRequestQueryDto: GetControlLogRequestQueryDto) {
+  async getControlLogs(
+    getControlLogRequestQueryDto: GetControlLogRequestQueryDto,
+  ): Promise<ControlLogResponseDto[]> {
     return await this.appRepository.getControlLogs(
       getControlLogRequestQueryDto.limit,
       getControlLogRequestQueryDto.orderBy,
     );
   }
 
-  async getLatestControlLogs(): Promise<
-    {
-      id: number;
-      target: string;
-      action: string;
-      source: string;
-      createdAt: string;
-    }[]
-  > {
+  async getLatestControlLogs(): Promise<ControlLogResponseDto[]> {
     return await this.appRepository.getLatestControlLogs();
   }
 

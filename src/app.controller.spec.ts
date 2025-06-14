@@ -5,6 +5,7 @@ import { PiGateway } from './gateway/pi.gateway';
 import { AppRepository } from './app.repository';
 import { PrismaService } from './prisma/prisma.service';
 import { ControlAction, ControlSource, ControlTarget } from '@prisma/client';
+import { ControlLogResponseDto } from '@src/dtos/control-log-response.dto';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -36,7 +37,7 @@ describe('AppController', () => {
 
   describe('getLatestControlLogs', () => {
     it('should return latest logs for all targets', async () => {
-      const mockLogs = [
+      const mockLogs: ControlLogResponseDto[] = [
         { id: 1, target: ControlTarget.led, action: ControlAction.on, source: ControlSource.user, createdAt: new Date('2023-01-01T10:00:00Z').toISOString() },
         { id: 2, target: ControlTarget.fan, action: ControlAction.off, source: ControlSource.auto, createdAt: new Date('2023-01-01T11:00:00Z').toISOString() },
         { id: 3, target: ControlTarget.auto_fan, action: ControlAction.enabled, source: ControlSource.user, createdAt: new Date('2023-01-01T12:00:00Z').toISOString() },
@@ -51,7 +52,7 @@ describe('AppController', () => {
     });
 
     it('should handle targets with no logs', async () => {
-      const mockLogs = [
+      const mockLogs: ControlLogResponseDto[] = [
         // No log for 'led'
         { id: 2, target: ControlTarget.fan, action: ControlAction.on, source: ControlSource.user, createdAt: new Date('2023-01-01T10:00:00Z').toISOString() },
         { id: 3, target: ControlTarget.auto_fan, action: ControlAction.disabled, source: ControlSource.auto, createdAt: new Date('2023-01-01T11:00:00Z').toISOString() },
@@ -64,7 +65,7 @@ describe('AppController', () => {
     });
 
     it('should handle empty database (no logs for any target)', async () => {
-      const mockLogs = [];
+      const mockLogs: ControlLogResponseDto[] = [];
       jest.spyOn(appService, 'getLatestControlLogs').mockResolvedValue(mockLogs);
 
       const result = await appController.getLatestControlLogs();

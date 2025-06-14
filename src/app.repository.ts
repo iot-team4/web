@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ControlAction, ControlTarget, SensorData, SensorType } from '@prisma/client';
+import { ControlLogResponseDto } from '@src/dtos/control-log-response.dto';
 import { ControlPartsLogDto } from '@src/dtos/control-parts-log.dto';
 import { OrderBy } from '@src/dtos/get-control-log-request-query.dto';
 import { SensorDataDto } from '@src/dtos/sensor-data.dto';
@@ -64,15 +65,7 @@ export class AppRepository {
   async getControlLogs(
     limit: number,
     orderBy: OrderBy,
-  ): Promise<
-    {
-      id: number;
-      target: string;
-      action: string;
-      source: string;
-      createdAt: string;
-    }[]
-  > {
+  ): Promise<ControlLogResponseDto[]> {
     const logs = await this.prismaService.controlLog.findMany({
       take: limit,
       orderBy: {
@@ -89,15 +82,7 @@ export class AppRepository {
     }));
   }
 
-  async getLatestControlLogs(): Promise<
-    {
-      id: number;
-      target: string;
-      action: string;
-      source: string;
-      createdAt: string;
-    }[]
-  > {
+  async getLatestControlLogs(): Promise<ControlLogResponseDto[]> {
     const targets = [ControlTarget.led, ControlTarget.fan, ControlTarget.auto_fan];
     const latestLogs = [];
 
