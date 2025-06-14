@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
 import io from 'socket.io-client';
 
+let socketInstance = null;
+
 function Dashboard({ addRecord }) {
   const [ledControl, setLedControl] = useState(false);
   const [manualFanControl, setManualFanControl] = useState(false);
@@ -174,11 +176,14 @@ function Dashboard({ addRecord }) {
   useEffect(() => {
     fetchInitialData(); // 초기 데이터 로딩 함수 호출
     
-    // 웹소켓 연결
-    const socket = io('http://localhost:3000/frontend');
+    // 웹소켓 연결: socketInstance가 아직 생성되지 않았다면 새로 생성합니다.
+    if (!socketInstance) {
+      socketInstance = io('http://localhost:3000/frontend'); // 백엔드 서버 주소 (예: 'http://localhost:3000')를 인자로 전달
+      console.log('웹소켓 연결 생성:', socketInstance);
+    }
 
-    // 'sensor-update' 채널 구독 
-    socket.on('sensor-update', (data) => {
+    // 'sensor-update' 채널 구독
+    socketInstance.on('sensor-update', (data) => {
       console.log('웹소켓으로 센서 데이터 수신:', data);
       setIndoorData(prevData => {
         let newTemp = prevData.temp;
@@ -201,11 +206,6 @@ function Dashboard({ addRecord }) {
         };
       });
     });
-
-    // 컴포넌트 언마운트 시 웹소켓 연결 해제
-    return () => {
-      socket.disconnect();
-    };
   }, []); // 빈 배열은 컴포넌트가 처음 마운트될 때만 실행됨을 의미합니다.
 
   const handleToggle = async (deviceName, currentState, setStateFunction) => {
