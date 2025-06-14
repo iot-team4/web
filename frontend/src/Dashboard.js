@@ -234,7 +234,50 @@ function Dashboard({ addRecord }) {
     }
   };
 
-  const isDustHigh = indoorData.dust > outdoorData.dust;
+  const getRecommendationMessage = () => {
+    // 1. 미세먼지 조건
+    if (outdoorData.airQuality === '매우나쁨') {
+      return "😷 현재 실외 미세먼지 수치가 매우 높아요! 외출을 자제하고 창문을 닫는 것이 좋아요.";
+    }
+    if (indoorData.dust > outdoorData.dust) {
+      return "💡 실내 미세먼지가 실외보다 높으니 환기를 추천드려요.";
+    }
+
+    // 2. 온도 조건
+    // 실내 온도가 너무 높고 실외는 쾌적할 때
+    if (indoorData.temp > 26 && (indoorData.temp - outdoorData.temp) > 3) {
+      return "🌡️ 실내 온도가 높고 실외 온도는 쾌적해요! 창문을 열어 환기하거나 에어컨을 켜는 것을 추천드려요.";
+    }
+    // 실내 온도가 너무 낮고 실외는 따뜻할 때
+    if (indoorData.temp < 20 && (outdoorData.temp - indoorData.temp) > 3) {
+      return "🥶 실내 온도가 낮고 실외는 따뜻해요! 난방을 줄이고 창문을 열어 자연 환기를 추천합니다.";
+    }
+    // 실외 온도가 너무 높을 때
+    if (outdoorData.temp > 30) {
+      return "🔥 실외 온도가 매우 높으니 창문은 닫고 에어컨을 가동하여 실내 온도를 유지하세요.";
+    }
+    // 실외 온도가 너무 낮을 때
+    if (outdoorData.temp < 5) {
+      return "❄️ 실외 온도가 매우 낮으니 창문은 닫고 난방을 가동하여 실내 온기를 유지하세요.";
+    }
+
+    // 3. 습도 조건
+    // 실내 습도가 너무 높을 때
+    if (indoorData.humidity > 70) {
+      return "💧 실내 습도가 높아 끈적하게 느껴질 수 있어요. 제습기를 사용하거나 짧게 환기하는 것을 추천합니다.";
+    }
+    // 실내 습도가 너무 낮을 때
+    if (indoorData.humidity < 40) {
+      return "🏜️ 실내 습도가 낮아 건조할 수 있어요. 가습기를 사용하거나 젖은 수건을 널어두세요.";
+    }
+    // 실내 습도가 높고 실외가 건조할 때 (환기와 연관)
+    if (indoorData.humidity > 60 && (indoorData.humidity - outdoorData.humidity) > 10) {
+      return "🌬️ 실내 습도가 높고 실외는 건조해요! 창문을 열어 환기하여 실내 습도를 낮춰보세요.";
+    }
+
+    // 기본 메시지 또는 추천할 내용이 없을 때
+    return "현재 실내외 환경은 대체로 쾌적합니다. 좋은 하루 되세요! 😊";
+  };
 
   if (loading && indoorData.temp === 0) {
     return (
@@ -261,11 +304,10 @@ function Dashboard({ addRecord }) {
         </div>
       )}
 
-      {isDustHigh && (
+    
         <div className="alert-message">
-          "실내 미세먼지가 실외보다 높으니 환기를 추천드려요."
+          {getRecommendationMessage()}
         </div>
-      )}
 
       <div className="environment-data-container">
         <div className="data-section">

@@ -5,7 +5,7 @@
 .alert-message {
   background-color: #fffde7;
   border-left: 5px solid #ffeb3b;
-  color: #616161; 
+  color: #616161;
   padding: 15px 20px;
   border-radius: 4px;
   margin-bottom: 30px;
@@ -15,9 +15,8 @@
 }
 
 .alert-message::before {
-    content: "💡";
-    font-size: 1.2em;
-    margin-right: 10px;
+  font-size: 1.2em;
+  margin-right: 10px;
 }
 
 .environment-data-container {
@@ -31,7 +30,7 @@
   background-color: #ffffff;
   padding: 25px;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .section-title {
@@ -57,7 +56,7 @@
   justify-content: center;
   padding: 20px 15px;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
   text-align: center;
   min-height: 100px;
 }
@@ -75,17 +74,24 @@
   color: #222222;
 }
 
-.temp-card { background-color: #fce4ec; }
-.humidity-card { background-color: #e3f2fd; }
-.dust-card { background-color: #fff9c4; }
-.air-quality-card { background-color: #e8f5e9; }
-
+.temp-card {
+  background-color: #fce4ec;
+}
+.humidity-card {
+  background-color: #e3f2fd;
+}
+.dust-card {
+  background-color: #fff9c4;
+}
+.air-quality-card {
+  background-color: #e8f5e9;
+}
 
 .control-section {
   background-color: #ffffff;
   padding: 25px;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .control-items {
@@ -123,7 +129,7 @@
   border-radius: 28px;
   transition: background-color 0.3s;
   cursor: pointer;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-switch:checked {
@@ -140,9 +146,9 @@
   top: 2px;
   left: 2px;
   transition: transform 0.3s, background-color 0.3s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .toggle-switch:checked::before {
-  transform: translateX(22px); 
+  transform: translateX(22px);
 }
