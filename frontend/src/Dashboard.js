@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './Dashboard.css';
 import io from 'socket.io-client';
 
@@ -80,7 +80,7 @@ function Dashboard({ addRecord }) {
 
   // 모든 초기 데이터와 제어 이력을 함께 가져오는 함수
   const fetchInitialData = async () => {
-    setLoading(true); // 로딩 시작
+    setLoading(true);
 
     try {
       // 1. 내부 센서 데이터 가져오기
@@ -163,12 +163,12 @@ function Dashboard({ addRecord }) {
         }
       }
       
-      setError(null); // 에러가 발생하지 않았다면 초기화
+      setError(null);
     } catch (err) {
       console.error('초기 데이터 로딩 실패:', err);
       setError(err.message);
     } finally {
-      setLoading(false); // 모든 로딩이 완료되면 로딩 상태 해제
+      setLoading(false);
     }
   };
 
@@ -176,13 +176,11 @@ function Dashboard({ addRecord }) {
   useEffect(() => {
     fetchInitialData(); // 초기 데이터 로딩 함수 호출
     
-    // 웹소켓 연결: socketInstance가 아직 생성되지 않았다면 새로 생성합니다.
     if (!socketInstance) {
-      socketInstance = io('http://localhost:3000/frontend'); // 백엔드 서버 주소 (예: 'http://localhost:3000')를 인자로 전달
+      socketInstance = io('http://localhost:3000/frontend');
       console.log('웹소켓 연결 생성:', socketInstance);
     }
 
-    // 'sensor-update' 채널 구독
     socketInstance.on('sensor-update', (data) => {
       console.log('웹소켓으로 센서 데이터 수신:', data);
       setIndoorData(prevData => {
@@ -206,7 +204,7 @@ function Dashboard({ addRecord }) {
         };
       });
     });
-  }, []); // 빈 배열은 컴포넌트가 처음 마운트될 때만 실행됨을 의미합니다.
+  }, []);
 
   const handleToggle = async (deviceName, currentState, setStateFunction) => {
     const newState = !currentState;
@@ -299,7 +297,7 @@ function Dashboard({ addRecord }) {
 
   const recommendationMessage = getRecommendationMessage();
 
-  if (loading) { // 모든 초기 데이터 로딩이 완료될 때까지 로딩 메시지 표시
+  if (loading) {
     return (
       <div className="dashboard-page">
         <div className="page-header">
