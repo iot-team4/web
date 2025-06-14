@@ -85,7 +85,7 @@ function Dashboard({ addRecord }) {
       const indoorResponsePromise = fetch('/api/sensors/latest');
 
       // 2. OpenWeatherMap 온도, 습도, 공기질 데이터 가져오기
-      const weatherApiKey = 'eeb365b6bdbb50592dc2406f1dc92f3e'; // Your API key
+      const weatherApiKey = process.env.REACT_APP_WEATHER_API_KEY;
       const lat = 37.631942;
       const lon = 127.055578;
       const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${weatherApiKey}`;
