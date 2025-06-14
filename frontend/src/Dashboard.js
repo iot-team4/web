@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
 import io from 'socket.io-client';
 
@@ -20,6 +20,7 @@ function Dashboard({ addRecord }) {
     humidity: 0,
     dust: 0,
     airQuality: '로딩중...',
+    aqi: 0, // OpenWeatherMap AQI 값을 저장할 필드 추가
   });
   
   const [loading, setLoading] = useState(true);
@@ -42,6 +43,37 @@ function Dashboard({ addRecord }) {
     if (aqi === 4) return '나쁨';
     if (aqi === 5) return '매우나쁨';
     return '알 수 없음';
+  };
+
+  // 헬퍼 함수: 온도 카드 색상 결정
+  const getTemperatureColor = (temp) => {
+    if (temp < 10) return '#a7d9f7'; // 파란색 (10도 미만)
+    if (temp >= 10 && temp < 25) return '#fff9c4'; // 노란색 (10도 이상 25도 미만)
+    return '#ffcdd2'; // 빨간색 (25도 이상)
+  };
+
+  // 헬퍼 함수: 습도 카드 색상 결정
+  const getHumidityColor = (humidity) => {
+    if (humidity < 50) return '#e3f2fd'; // 연한 파란색 (50% 미만)
+    if (humidity >= 50 && humidity < 80) return '#90caf9'; // 파란색 (50% 이상 80% 미만)
+    return '#42a5f5'; // 진한 파란색 (80% 이상)
+  };
+
+  // 헬퍼 함수: 실내 미세먼지/공기질 카드 색상 결정 (PM2.5 기준)
+  const getIndoorDustAirQualityColor = (dustLevel) => {
+    if (dustLevel <= 15) return '#e8f5e9'; // 좋음 (그린)
+    if (dustLevel <= 35) return '#fff9c4'; // 보통 (노랑)
+    if (dustLevel <= 75) return '#ffccbc'; // 나쁨 (주황)
+    return '#ef9a9a'; // 매우 나쁨 (빨강)
+  };
+
+  // 헬퍼 함수: 실외 미세먼지/공기질 카드 색상 결정 (OpenWeatherMap AQI 기준)
+  const getOutdoorAqiColor = (aqi) => {
+    if (aqi === 1) return '#e8f5e9'; // 좋음 (그린)
+    if (aqi === 2 || aqi === 3) return '#fff9c4'; // 보통 (노랑)
+    if (aqi === 4) return '#ffccbc'; // 나쁨 (주황)
+    if (aqi === 5) return '#ef9a9a'; // 매우 나쁨 (빨강)
+    return '#ffffff'; // 기본값 (흰색)
   };
 
   // API 호출 함수 (최초 로딩 시 사용)
@@ -73,12 +105,12 @@ function Dashboard({ addRecord }) {
         airQuality: getAirQualityStatus(indoorDust),
       });
 
-      // 2. OpenWeatherMap 온도, 습도 데이터 가져오기
-      const weatherApiKey = process.env.REACT_APP_WEATHER_API_KEY;
+      // 2. OpenWeatherMap 온도, 습도 데이터 가져오기 
+      const weatherApiKey = 'eeb365b6bdbb50592dc2406f1dc92f3e';
       const lat = 37.631942;
       const lon = 127.055578;
       const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${weatherApiKey}`;
-      
+
       const weatherResponse = await fetch(weatherApiUrl);
       if (!weatherResponse.ok) {
         throw new Error('외부 날씨 데이터를 가져오는데 실패했습니다.');
@@ -87,7 +119,7 @@ function Dashboard({ addRecord }) {
       const outdoorTemp = weatherData.main.temp;
       const outdoorHumidity = weatherData.main.humidity;
 
-      // 3. OpenWeatherMap 공기질 데이터 가져오기
+      // 3. OpenWeatherMap 공기질 데이터 가져오기 
       const airPollutionApiUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${weatherApiKey}`;
 
       const airPollutionResponse = await fetch(airPollutionApiUrl);
@@ -96,13 +128,14 @@ function Dashboard({ addRecord }) {
       }
       const airPollutionData = await airPollutionResponse.json();
       const outdoorPm25 = airPollutionData.list[0].components.pm2_5;
-      const outdoorAqi = airPollutionData.list[0].main.aqi;
+      const outdoorAqi = airPollutionData.list[0].main.aqi; // AQI 값 가져오기 
       
       setOutdoorData({
         temp: outdoorTemp,
         humidity: outdoorHumidity,
         dust: outdoorPm25,
         airQuality: getOpenWeatherAirQualityStatus(outdoorAqi),
+        aqi: outdoorAqi, // AQI 값 상태에 저장
       });
       
       setError(null);
@@ -173,7 +206,7 @@ function Dashboard({ addRecord }) {
 
     try {
       // API로 제어 명령 전송 
-      const response = await fetch('/api/control', { // 부품 제어 API 사용 
+      const response = await fetch('/api/control', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -230,7 +263,7 @@ function Dashboard({ addRecord }) {
 
       {isDustHigh && (
         <div className="alert-message">
-          💡 "실내 미세먼지가 실외보다 높으니 환기를 추천드려요."
+          "실내 미세먼지가 실외보다 높으니 환기를 추천드려요."
         </div>
       )}
 
@@ -238,19 +271,19 @@ function Dashboard({ addRecord }) {
         <div className="data-section">
           <h3 className="section-title">실내</h3>
           <div className="data-cards">
-            <div className="card temp-card">
+            <div className="card" style={{ backgroundColor: getTemperatureColor(indoorData.temp) }}>
               <span className="card-label">온도</span>
               <span className="card-value">{indoorData.temp}°C</span>
             </div>
-            <div className="card humidity-card">
+            <div className="card" style={{ backgroundColor: getHumidityColor(indoorData.humidity) }}>
               <span className="card-label">습도</span>
               <span className="card-value">{indoorData.humidity}%</span>
             </div>
-            <div className="card dust-card">
+            <div className="card" style={{ backgroundColor: getIndoorDustAirQualityColor(indoorData.dust) }}>
               <span className="card-label">미세먼지</span>
               <span className="card-value">{indoorData.dust} μg/m³</span>
             </div>
-            <div className="card air-quality-card">
+            <div className="card" style={{ backgroundColor: getIndoorDustAirQualityColor(indoorData.dust) }}>
               <span className="card-label">공기질</span>
               <span className="card-value">{indoorData.airQuality}</span>
             </div>
@@ -260,19 +293,19 @@ function Dashboard({ addRecord }) {
         <div className="data-section">
           <h3 className="section-title">실외</h3>
           <div className="data-cards">
-            <div className="card temp-card">
+            <div className="card" style={{ backgroundColor: getTemperatureColor(outdoorData.temp) }}>
               <span className="card-label">온도</span>
               <span className="card-value">{outdoorData.temp}°C</span>
             </div>
-            <div className="card humidity-card">
+            <div className="card" style={{ backgroundColor: getHumidityColor(outdoorData.humidity) }}>
               <span className="card-label">습도</span>
               <span className="card-value">{outdoorData.humidity}%</span>
             </div>
-            <div className="card dust-card">
+            <div className="card" style={{ backgroundColor: getOutdoorAqiColor(outdoorData.aqi) }}>
               <span className="card-label">미세먼지</span>
               <span className="card-value">{outdoorData.dust} μg/m³</span>
             </div>
-            <div className="card air-quality-card">
+            <div className="card" style={{ backgroundColor: getOutdoorAqiColor(outdoorData.aqi) }}>
               <span className="card-label">공기질</span>
               <span className="card-value">{outdoorData.airQuality}</span>
             </div>
