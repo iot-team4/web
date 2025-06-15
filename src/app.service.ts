@@ -60,6 +60,7 @@ export class AppService {
     return await this.appRepository.getControlLogs(
       getControlLogRequestQueryDto.limit,
       getControlLogRequestQueryDto.orderBy,
+      getControlLogRequestQueryDto.offset,
     );
   }
 

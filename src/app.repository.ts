@@ -65,9 +65,11 @@ export class AppRepository {
   async getControlLogs(
     limit: number,
     orderBy: OrderBy,
+    offset: number,
   ): Promise<ControlLogResponseDto[]> {
     const logs = await this.prismaService.controlLog.findMany({
       take: limit,
+      skip: offset,
       orderBy: {
         createdAt: orderBy,
       },
