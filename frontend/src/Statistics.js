@@ -1,31 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Statistics.css';
 
 function Statistics() {
   const [selectedFilter, setSelectedFilter] = useState('모두 보기');
   const [hoveredPoint, setHoveredPoint] = useState(null);
+  const [timeData, setTimeData] = useState([]);
+
+  const sensorTypeMap = {
+    '온도': 'temperature',
+    '습도': 'humidity',
+    '미세먼지': 'pm25',
+  };
 
   const handleFilterClick = (filterType) => {
     setSelectedFilter(filterType);
   };
 
-  // 시간대별 데이터 (10:00 ~ 17:00)
-  const timeData = [
-    { time: '10:00', 온도: 20, 습도: 60, 미세먼지: 21 },
-    { time: '11:00', 온도: 21, 습도: 55, 미세먼지: 21 },
-    { time: '12:00', 온도: 22, 습도: 50, 미세먼지: 15 },
-    { time: '13:00', 온도: 23, 습도: 45, 미세먼지: 15 },
-    { time: '14:00', 온도: 24, 습도: 40, 미세먼지: 15 },
-    { time: '15:00', 온도: 25, 습도: 35, 미세먼지: 15 },
-    { time: '16:00', 온도: 26, 습도: 35, 미세먼지: 15 },
-    { time: '17:00', 온도: 25, 습도: 40, 미세먼지: 15 },
-  ];
+  useEffect(() => {
+    // 선택된 센서 종류에 따라 개별적으로 요청
+    const fetchData = async () => {
+      try {
+        const results = {
+          '온도': [],
+          '습도': [],
+          '미세먼지': [],
+        };
 
-  // 현재 데이터 (최신 2개 시간)
-  const currentData = [
-    { time: '2025. 05. 26. 오전 10:00', 온도: '20°C', 습도: '60%', 미세먼지: '21μg/m³' },
-    { time: '2025. 05. 26. 오전 11:00', 온도: '21°C', 습도: '55%', 미세먼지: '21μg/m³' },
-  ];
+        const typesToFetch = selectedFilter === '모두 보기'
+          ? ['온도', '습도', '미세먼지']
+          : [selectedFilter];
+
+        await Promise.all(typesToFetch.map(async (type) => {
+          const res = await fetch(`/api/sensors/summary?sensorType=${sensorTypeMap[type]}&range=24h`);
+          const json = await res.json();
+
+          json.forEach((item, index) => {
+            const hour = new Date(item.createdAt).getHours().toString().padStart(2, '0') + ':00';
+            if (!results[type][index]) results[type][index] = { time: hour };
+            results[type][index][type] = parseFloat(item.avgValue.toFixed(1));
+          });
+        }));
+
+        // 시간 기준으로 병합
+        const merged = Object.values(results).flat().reduce((acc, item) => {
+          const existing = acc.find((a) => a.time === item.time);
+          if (existing) Object.assign(existing, item);
+          else acc.push(item);
+          return acc;
+        }, []);
+
+        // 시간순 정렬
+        merged.sort((a, b) => a.time.localeCompare(b.time));
+
+        setTimeData(merged);
+      } catch (err) {
+        console.error('📉 통계 데이터 요청 실패:', err);
+      }
+    };
+
+    fetchData();
+  }, [selectedFilter]);
 
   // 툴팁 위치 계산 함수 - 그래프 왼쪽 중앙에 고정
   const getTooltipPosition = (hoveredPoint) => {
@@ -87,7 +121,7 @@ function Statistics() {
         <div className="chart-container">
           <svg width="100%" height="100%" viewBox="0 0 800 300">
             {/* Y축 그리드 라인 */}
-            {[0, 15, 30, 45, 60].map((value, index) => (
+            {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90].map((value, index) => (
               <g key={index}>
                 <line
                   x1="60"
@@ -220,28 +254,6 @@ function Statistics() {
             </div>
           )}
         </div>
-      </div>
-
-      {/* 현재 데이터 카드들 */}
-      <div className="current-data-section">
-        {currentData.map((data, index) => (
-          <div key={index} className="data-card">
-            <div className="card-time">
-              🕐 {data.time}
-            </div>
-            <div className="card-data">
-              <div className="data-item temperature">
-                🌡️ 온도: {data.온도}
-              </div>
-              <div className="data-item humidity">
-                💧 습도: {data.습도}
-              </div>
-              <div className="data-item dust">
-                🫧 미세먼지: {data.미세먼지}
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
